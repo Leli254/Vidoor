@@ -67,12 +67,7 @@ class YouTubeDownloader(QMainWindow):
             return
 
         try:
-            ydl_opts = {
-                'format': 'bestaudio/best',
-                'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}],
-                'outtmpl': '%(title)s-%(id)s.%(ext)s',
-                'logger': MyLogger(),
-            }
+            ydl_opts = {'logger': MyLogger()}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(url, download=False)
                 formats = info_dict.get('formats', [])
@@ -88,18 +83,16 @@ class YouTubeDownloader(QMainWindow):
             QMessageBox.critical(self, "Error", f"Failed to fetch resolutions: {e}")
 
     def download_video(self):
-        url = self.url_input.text().strip()  # Get URL from input field
+        url = self.url_input.text().strip()
         if not url:
             QMessageBox.warning(self, "Error", "Please enter a valid YouTube URL.")
             return
 
-        # Get selected resolution from combo box
         selected_resolution = self.resolutions_combo.currentData()
         if not selected_resolution:
             QMessageBox.warning(self, "Error", "Please select a resolution.")
             return
 
-        # Prompt user to select download folder
         download_path = QFileDialog.getExistingDirectory(self, "Select Download Folder")
         if not download_path:
             QMessageBox.warning(self, "Error", "No download directory selected.")
@@ -109,19 +102,22 @@ class YouTubeDownloader(QMainWindow):
             def progress_hook(d):
                 if d['status'] == 'downloading':
                     percent = d.get('downloaded_bytes', 0) / d.get('total_bytes', 1) * 100
-                    self.progress_bar.setValue(int(percent))  # Update progress bar
+                    self.progress_bar.setValue(int(percent))
                 elif d['status'] == 'finished':
-                    self.progress_bar.setValue(100)  # Set progress bar to 100% once done
+                    self.progress_bar.setValue(100)
 
-            # yt-dlp options for downloading the video with audio and video combined
             ydl_opts = {
-                'format': 'bestaudio+bestaudio',  # Download the best available audio and video and combine them
-                'concurrent_fragment_downloads': 4,  # Optional: download segments concurrently
-                'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),  # Output template
-                'progress_hooks': [progress_hook],  # Hook to update progress
+                'format': f"{selected_resolution}+bestaudio/best",
+                'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
+                'progress_hooks': [progress_hook],
+                'logger': MyLogger(),
+                'postprocessors': [{
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4'
+                }]
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])  # Start downloading the video
+                ydl.download([url])
 
             QMessageBox.information(self, "Success", "Download completed successfully.")
         except Exception as e:

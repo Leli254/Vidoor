@@ -23,7 +23,7 @@ class MyLogger(object):
 class YouTubeDownloader(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("YouTube Downloader with yt-dlp")
+        self.setWindowTitle("Sonic The YouTube Downloader ")
         self.setGeometry(200, 200, 600, 400)
 
         # Central Widget

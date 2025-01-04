@@ -7,17 +7,26 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 import yt_dlp
+from yt_dlp.postprocessor.ffmpeg import FFmpegMergerPP
 
 
-class MyLogger(object):
+class MyLogger:
     def debug(self, msg):
+        # For debugging messages
         pass
+
+    def info(self, msg):
+        # For general information messages
+        print(msg)
 
     def warning(self, msg):
-        pass
+        # For warnings
+        print(f"WARNING: {msg}")
 
     def error(self, msg):
-        print(msg)
+        # For error messages
+        print(f"ERROR: {msg}")
+
 
 
 class YouTubeDownloader(QMainWindow):
@@ -33,7 +42,9 @@ class YouTubeDownloader(QMainWindow):
         self.central_widget.setLayout(self.layout)
 
         # Header
-        self.header_label = QLabel("<h1 style='color: #0078d7;'>Sonic YouTube Downloader</h1>")
+        self.header_label = QLabel(
+            "<h1 style='color: #0078d7;'>Sonic YouTube Downloader</h1>"
+            )
         self.header_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.header_label)
 
@@ -43,7 +54,9 @@ class YouTubeDownloader(QMainWindow):
         self.url_group.setLayout(self.url_layout)
         self.url_label = QLabel("YouTube URL:")
         self.url_input = QLineEdit()
-        self.url_input.setPlaceholderText("Enter the YouTube video URL here...")
+        self.url_input.setPlaceholderText(
+            "Enter the YouTube video URL here..."
+            )
         self.url_layout.addWidget(self.url_label)
         self.url_layout.addWidget(self.url_input)
         self.layout.addWidget(self.url_group)
@@ -119,22 +132,104 @@ class YouTubeDownloader(QMainWindow):
                 text-align: center;
                 background-color: #e0e0e0;
                 color: #000000;
-                border: 1px solid #cccccc;
-                border-radius: 5px;
-            }
-            QProgressBar::chunk {
-                background-color: #32CD32;  /* Lime Green */
-                border-radius: 5px;
             }
         """)
 
     def fetch_resolutions(self):
-        # Fetching resolutions logic as before
-        pass
+        url = self.url_input.text().strip()
+        if not url:
+            QMessageBox.warning(
+                self, "Error", "Please enter a valid YouTube URL."
+                )
+            return
+
+        try:
+            ydl_opts = {'logger': MyLogger()}
+
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info_dict = ydl.extract_info(url, download=False)
+                formats = info_dict.get('formats', [])
+                self.resolutions_combo.clear()
+                for fmt in formats:
+                    if fmt.get('height') and fmt.get('ext') == 'mp4':
+                        size_mb = (fmt.get('filesize', 0) or 0) / (1024 * 1024)
+                        resolution = f"{fmt['height']}p ({size_mb:.2f} MB)" if size_mb > 0 else f"{fmt['height']}p (Unknown size)"
+                        self.resolutions_combo.addItem(
+                            resolution, fmt['format_id']
+                            )
+
+            QMessageBox.information(
+                self, "Success", "Resolutions fetched successfully."
+                )
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to fetch resolutions: {e}"
+                )
 
     def download_video(self):
-        # Download video logic as before
-        pass
+        url = self.url_input.text().strip()
+        if not url:
+            QMessageBox.warning(
+                self, "Error", "Please enter a valid YouTube URL."
+                )
+            return
+
+        selected_resolution = self.resolutions_combo.currentData()
+        if not selected_resolution:
+            QMessageBox.warning(self, "Error", "Please select a resolution.")
+            return
+
+        download_path = QFileDialog.getExistingDirectory(
+            self, "Select Download Folder"
+            )
+        if not download_path:
+            QMessageBox.warning(
+                self, "Error", "No download directory selected."
+                )
+            return
+
+        try:
+            def progress_hook(d):
+                if d['status'] == 'downloading':
+                    percent = d.get(
+                        'downloaded_bytes', 0
+                        ) / d.get('total_bytes', 1) * 100
+                    self.progress_bar.setValue(int(percent))
+                elif d['status'] == 'finished':
+                    self.progress_bar.setValue(100)
+
+            ydl_opts = {
+                'format': f"{selected_resolution}+bestaudio/best",
+                'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
+                'merge_output_format': 'mp4',
+                'progress_hooks': [progress_hook],
+                'postprocessors': [
+                    {
+                        'key': 'FFmpegVideoConvertor',
+                        'preferedformat': 'mp4',
+                        # embed thumbnail in the video
+                        'before_options': '-i "%(thumbnail)s"',
+                        },
+                ],
+                'postprocessor_args': [
+                    '-c:v', 'copy',
+                    ],
+                'concurrent_fragments': 4,
+                'fragment_retries': 10,
+                'skip_unavailable_fragments': True,
+                'retries': 3,
+                'logger': MyLogger()
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
+
+            QMessageBox.information(
+                self, "Success", "Download completed successfully."
+                )
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Error", f"Failed to download video: {e}"
+                )
 
 
 if __name__ == "__main__":

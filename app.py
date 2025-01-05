@@ -203,21 +203,24 @@ class YouTubeDownloader(QMainWindow):
                 'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
                 'merge_output_format': 'mp4',
                 'progress_hooks': [progress_hook],
+                'writethumbnail': True,
                 'postprocessors': [
                     {
                         'key': 'FFmpegVideoConvertor',
                         'preferedformat': 'mp4',
-                        # embed thumbnail in the video
-                        'before_options': '-i "%(thumbnail)s"',
                         },
+                    #{'key': 'FFmpegThumbnailsConvertor', 'format': 'jpg'},
+                    {"key": "EmbedThumbnail", },
+                    #{'key': 'FFmpegMetadata', 'add_metadata': 'True'},
                 ],
                 'postprocessor_args': [
-                    '-c:v', 'copy',
+                    '-c', 'copy',
                     ],
                 'concurrent_fragments': 4,
                 'fragment_retries': 10,
                 'skip_unavailable_fragments': True,
                 'retries': 3,
+                'verbose': True,
                 'logger': MyLogger()
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:

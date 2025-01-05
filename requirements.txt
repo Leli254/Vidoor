@@ -5,6 +5,7 @@ cffi==1.17.1
 charset-normalizer==3.4.1
 curl_cffi==0.7.1
 ffmpeg-python==0.2.0
+ffprobe==0.5
 future==1.0.0
 h11==0.14.0
 idna==3.10

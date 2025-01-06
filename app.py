@@ -29,6 +29,9 @@ class YouTubeDownloader(QMainWindow):
         self.setWindowTitle("Sonic Video Downloader")
         self.setGeometry(200, 200, 600, 500)
 
+        # Set Downloads folder
+        self.downloads_folder = os.path.expanduser("~/Downloads")
+
         # Central Widget
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -182,10 +185,6 @@ class YouTubeDownloader(QMainWindow):
 
         download_type = self.type_combo.currentText()
         selected_resolution = self.resolutions_combo.currentData()
-        download_path = QFileDialog.getExistingDirectory(self, "Select Download Folder")
-        if not download_path:
-            QMessageBox.warning(self, "Error", "No download directory selected.")
-            return
 
         try:
             def progress_hook(d):
@@ -205,7 +204,7 @@ class YouTubeDownloader(QMainWindow):
                     return
                 ydl_opts = {
                     'format': f"{selected_resolution}+bestaudio/best",
-                    'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
+                    'outtmpl': os.path.join(self.downloads_folder, '%(title)s.%(ext)s'),
                     'merge_output_format': 'mp4',
                     'progress_hooks': [progress_hook],
                     'logger': MyLogger()
@@ -213,7 +212,7 @@ class YouTubeDownloader(QMainWindow):
             else:  # Audio
                 ydl_opts = {
                     'format': 'bestaudio/best',
-                    'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
+                    'outtmpl': os.path.join(self.downloads_folder, '%(title)s.%(ext)s'),
                     'postprocessors': [{
                         'key': 'FFmpegExtractAudio',
                         'preferredcodec': 'mp3',

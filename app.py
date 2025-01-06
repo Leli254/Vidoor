@@ -1,9 +1,10 @@
 import sys
 import os
+import signal
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QLabel,
     QLineEdit, QPushButton, QComboBox, QWidget,
-    QMessageBox, QProgressBar, QGroupBox
+    QMessageBox, QProgressBar, QGroupBox, QHBoxLayout
 )
 from PyQt5.QtCore import Qt
 import yt_dlp
@@ -74,16 +75,33 @@ class YouTubeDownloader(QMainWindow):
         self.download_group.setLayout(self.download_layout)
         self.download_button = QPushButton("Download")
         self.download_button.clicked.connect(self.download_video)
+
+        # Cancel Button
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.setEnabled(False)
+        self.cancel_button.clicked.connect(self.confirm_cancel)
+
         self.progress_bar = QProgressBar()
         self.progress_bar.setAlignment(Qt.AlignCenter)
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("Ready")
+
         self.download_layout.addWidget(self.download_button)
         self.download_layout.addWidget(self.progress_bar)
+
+        # Add Cancel Button below the progress bar
+        self.button_layout = QHBoxLayout()
+        self.button_layout.addWidget(self.cancel_button)
+        self.download_layout.addLayout(self.button_layout)
+
         self.layout.addWidget(self.download_group)
 
         # Styling
         self.apply_styles()
+
+        # State for tracking processes
+        self.download_process = None
+        self.cancel_requested = False
 
     def apply_styles(self):
         self.setStyleSheet("""
@@ -127,6 +145,22 @@ class YouTubeDownloader(QMainWindow):
             }
         """)
 
+    def confirm_cancel(self):
+        if QMessageBox.question(
+                self, "Confirm Cancel", "Are you sure you want to cancel the download?",
+                QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            self.cancel_download()
+
+    def cancel_download(self):
+        self.cancel_requested = True
+        if self.download_process:
+            os.killpg(os.getpgid(self.download_process.pid), signal.SIGTERM)
+            self.download_process = None
+        self.progress_bar.setValue(0)
+        self.progress_bar.setFormat("Canceled")
+        self.cancel_button.setEnabled(False)
+        self.download_button.setEnabled(True)
+
     def download_video(self):
         url = self.url_input.text().strip()
         if not url:
@@ -134,9 +168,15 @@ class YouTubeDownloader(QMainWindow):
             return
 
         download_type = self.type_combo.currentText()
+        self.cancel_button.setEnabled(True)
+        self.download_button.setEnabled(False)
+        self.cancel_requested = False
 
         try:
             def progress_hook(d):
+                if self.cancel_requested:
+                    raise KeyboardInterrupt
+
                 if d['status'] == 'downloading':
                     downloaded_bytes = d.get('downloaded_bytes', 0)
                     total_bytes = d.get('total_bytes', 1)
@@ -185,8 +225,13 @@ class YouTubeDownloader(QMainWindow):
                 ydl.download([url])
 
             QMessageBox.information(self, "Success", "Download completed successfully.")
+        except KeyboardInterrupt:
+            self.cancel_download()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to download: {e}")
+        finally:
+            self.cancel_button.setEnabled(False)
+            self.download_button.setEnabled(True)
 
 
 if __name__ == "__main__":

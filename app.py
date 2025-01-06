@@ -3,7 +3,7 @@ import os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QLabel,
     QLineEdit, QPushButton, QComboBox, QWidget,
-    QMessageBox, QFileDialog, QProgressBar, QGroupBox
+    QMessageBox, QProgressBar, QGroupBox
 )
 from PyQt5.QtCore import Qt
 import yt_dlp
@@ -51,7 +51,7 @@ class YouTubeDownloader(QMainWindow):
         self.url_group.setLayout(self.url_layout)
         self.url_label = QLabel("YouTube URL:")
         self.url_input = QLineEdit()
-        self.url_input.setPlaceholderText("Enter the YouTube video URL here...")
+        self.url_input.setPlaceholderText("Enter the YouTube video or playlist URL here...")
         self.url_layout.addWidget(self.url_label)
         self.url_layout.addWidget(self.url_input)
         self.layout.addWidget(self.url_group)
@@ -68,21 +68,8 @@ class YouTubeDownloader(QMainWindow):
         self.type_layout.addWidget(self.type_combo)
         self.layout.addWidget(self.type_group)
 
-        # Step 3: Fetch Resolutions
-        self.resolution_group = QGroupBox("Step 3: Choose Resolution (Video Only)")
-        self.resolution_layout = QVBoxLayout()
-        self.resolution_group.setLayout(self.resolution_layout)
-        self.fetch_button = QPushButton("Fetch Resolutions")
-        self.fetch_button.clicked.connect(self.fetch_resolutions)
-        self.resolution_label = QLabel("Available Resolutions:")
-        self.resolutions_combo = QComboBox()
-        self.resolution_layout.addWidget(self.fetch_button)
-        self.resolution_layout.addWidget(self.resolution_label)
-        self.resolution_layout.addWidget(self.resolutions_combo)
-        self.layout.addWidget(self.resolution_group)
-
-        # Step 4: Download
-        self.download_group = QGroupBox("Step 4: Download")
+        # Step 3: Download
+        self.download_group = QGroupBox("Step 3: Download")
         self.download_layout = QVBoxLayout()
         self.download_group.setLayout(self.download_layout)
         self.download_button = QPushButton("Download")
@@ -97,7 +84,6 @@ class YouTubeDownloader(QMainWindow):
 
         # Styling
         self.apply_styles()
-        self.update_ui()  # Set initial state of UI
 
     def apply_styles(self):
         self.setStyleSheet("""
@@ -134,48 +120,12 @@ class YouTubeDownloader(QMainWindow):
             QPushButton:hover {
                 background-color: #005a9e;
             }
-            QComboBox {
-                padding: 5px;
-            }
             QProgressBar {
                 text-align: center;
                 background-color: #e0e0e0;
                 color: #000000;
             }
         """)
-
-    def update_ui(self):
-        """Update the UI based on the selected type (Audio/Video)."""
-        is_video = self.type_combo.currentText() == "Video"
-        self.resolution_group.setVisible(is_video)
-        self.fetch_button.setEnabled(is_video)
-        self.resolutions_combo.setEnabled(is_video)
-
-    def fetch_resolutions(self):
-        url = self.url_input.text().strip()
-        if not url:
-            QMessageBox.warning(self, "Error", "Please enter a valid YouTube URL.")
-            return
-
-        try:
-            ydl_opts = {'logger': MyLogger()}
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info_dict = ydl.extract_info(url, download=False)
-                formats = info_dict.get('formats', [])
-                self.resolutions_combo.clear()
-                for fmt in formats:
-                    if fmt.get('height') and fmt.get('ext'):
-                        size_mb = (fmt.get('filesize', 0) or 0) / (1024 * 1024)
-                        resolution = (
-                            f"{fmt['height']}p, {fmt['ext'].upper()} "
-                            f"({size_mb:.2f} MB)" if size_mb > 0
-                            else f"{fmt['height']}p, {fmt['ext'].upper()} (Unknown size)"
-                        )
-                        self.resolutions_combo.addItem(resolution, fmt['format_id'])
-
-            QMessageBox.information(self, "Success", "Resolutions fetched successfully.")
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to fetch resolutions: {e}")
 
     def download_video(self):
         url = self.url_input.text().strip()
@@ -184,7 +134,6 @@ class YouTubeDownloader(QMainWindow):
             return
 
         download_type = self.type_combo.currentText()
-        selected_resolution = self.resolutions_combo.currentData()
 
         try:
             def progress_hook(d):
@@ -198,13 +147,22 @@ class YouTubeDownloader(QMainWindow):
                     self.progress_bar.setValue(100)
                     self.progress_bar.setFormat("Completed - 100%")
 
+            # Check if URL is a playlist and create folder if necessary
+            ydl_opts_info = {'logger': MyLogger()}
+            with yt_dlp.YoutubeDL(ydl_opts_info) as ydl:
+                info_dict = ydl.extract_info(url, download=False)
+                is_playlist = 'entries' in info_dict
+                output_folder = self.downloads_folder
+                if is_playlist:
+                    playlist_title = info_dict.get('title', 'Playlist')
+                    output_folder = os.path.join(self.downloads_folder, playlist_title)
+                    os.makedirs(output_folder, exist_ok=True)
+
+            # Define yt-dlp options for download
             if download_type == "Video":
-                if not selected_resolution:
-                    QMessageBox.warning(self, "Error", "Please select a resolution.")
-                    return
                 ydl_opts = {
-                    'format': f"{selected_resolution}+bestaudio/best",
-                    'outtmpl': os.path.join(self.downloads_folder, '%(title)s.%(ext)s'),
+                    'format': 'bestvideo+bestaudio/best',
+                    'outtmpl': os.path.join(output_folder, '%(title)s.%(ext)s'),
                     'merge_output_format': 'mp4',
                     'progress_hooks': [progress_hook],
                     'logger': MyLogger()
@@ -212,7 +170,7 @@ class YouTubeDownloader(QMainWindow):
             else:  # Audio
                 ydl_opts = {
                     'format': 'bestaudio/best',
-                    'outtmpl': os.path.join(self.downloads_folder, '%(title)s.%(ext)s'),
+                    'outtmpl': os.path.join(output_folder, '%(title)s.%(ext)s'),
                     'postprocessors': [{
                         'key': 'FFmpegExtractAudio',
                         'preferredcodec': 'mp3',
@@ -222,6 +180,7 @@ class YouTubeDownloader(QMainWindow):
                     'logger': MyLogger()
                 }
 
+            # Download the video or playlist
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 

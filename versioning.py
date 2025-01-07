@@ -114,12 +114,7 @@ class YouTubeDownloader(QMainWindow):
 
         self.type_label = QLabel("Select download type:")
         self.type_combo = QComboBox()
-        # Adding a placeholder item at index 0
-        self.type_combo.addItem("Select Type", None)  # This item has no real value
         self.type_combo.addItems(["Video", "Audio"])
-        # Set the default to the placeholder
-        self.type_combo.setCurrentIndex(0)
-        self.type_combo.setEnabled(True)
         self.type_combo.currentIndexChanged.connect(self.update_ui)
         self.type_layout.addWidget(self.type_label)
         self.type_layout.addWidget(self.type_combo)
@@ -223,34 +218,17 @@ class YouTubeDownloader(QMainWindow):
             }
         """)
 
-    def check_url_input(self):
-        url = self.url_input.text().strip()
-        if url:
-            self.type_combo.setEnabled(True)
-        else:
-            self.type_combo.setEnabled(False)
-            self.type_combo.setCurrentIndex(0)  # Reset to placeholder
-            # Clear previous selections
-            self.resolution_combo.clear()
-            self.resolution_combo.setEnabled(False)
-
     def update_ui(self):
         """
         Adjusts UI elements based on the selected download type.
         """
-        selected_type = self.type_combo.currentText()
-        if not self.url_input.text().strip():
-            QMessageBox.warning(self, "URL Required", "Please provide a YouTube URL before selecting download type.")
-            self.type_combo.setCurrentIndex(0)
-            return
-
-        if selected_type == "Audio":
+        if self.type_combo.currentText() == "Audio":
             self.progress_bar.setFormat("Ready to download audio.")
             self.resolution_combo.setEnabled(False)
             self.resolution_combo.clear()
             self.loading_label.setVisible(False)
             self.loading_text.setVisible(False)
-        elif selected_type == "Video":
+        else:
             self.progress_bar.setFormat("Ready to download video.")
             self.resolution_combo.setEnabled(False)  # Disable while fetching
             self.resolution_combo.clear()
@@ -258,12 +236,6 @@ class YouTubeDownloader(QMainWindow):
             self.loading_text.setVisible(True)
             self.loading_movie.start()
             self.fetch_resolutions_in_background()
-        else:  # Placeholder 'Select Type' is selected
-            self.progress_bar.setFormat("Please select download type.")
-            self.resolution_combo.setEnabled(False)
-            self.resolution_combo.clear()
-            self.loading_label.setVisible(False)
-            self.loading_text.setVisible(False)
 
     def fetch_resolutions_in_background(self):
         url = self.url_input.text().strip()

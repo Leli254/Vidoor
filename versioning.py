@@ -1,3 +1,4 @@
+import logging
 import sys
 import os
 import signal
@@ -9,6 +10,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QMovie
 import yt_dlp
+from urllib.parse import urlparse
 
 
 class MyLogger:
@@ -26,20 +28,38 @@ class MyLogger:
 
 
 class ResolutionFetcherThread(QThread):
+    """
+    Fetches available video resolutions from YouTube using yt_dlp.
+
+    Emits a signal with a list of resolutions or an error signal.
+    """
+
     resolution_fetched = pyqtSignal(list)
     error_signal = pyqtSignal(str)
 
     def __init__(self, url):
         super().__init__()
-        self.url = url
-        # YouTube resolutions to filter
+        self.url = self.validate_url(url)
         self.allowed_resolutions = {
             '144p', '240p', '360p',
             '480p', '720p', '1080p',
             '1440p', '2160p'
             }
 
+        self.logger = logging.getLogger(__name__)
+
+    def validate_url(self, url):
+        """Check if the URL is valid. Raises ValueError if not."""
+        result = urlparse(url)
+        if not all([result.scheme, result.netloc]):
+            raise ValueError("Invalid URL format")
+        return url
+
     def run(self):
+        """
+        Fetches video resolutions in a separate thread.
+        """
+
         try:
             ydl_opts = {'logger': MyLogger()}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -50,7 +70,9 @@ class ResolutionFetcherThread(QThread):
                 for fmt in formats:
                     format_note = fmt.get('format_note')
                     ext = fmt.get('ext')
-                    filesize = fmt.get('filesize', 0) or 0  # Default to 0 if not available
+
+                    # Default to 0 if not available
+                    filesize = fmt.get('filesize', 0) or 0
                     if format_note in self.allowed_resolutions and ext:
                         size_mb = filesize / (1024 * 1024)
                         resolution = (
@@ -63,10 +85,12 @@ class ResolutionFetcherThread(QThread):
                 if resolutions:
                     self.resolution_fetched.emit(resolutions)
                 else:
-                    self.error_signal.emit("No resolutions available for this video.")
+                    self.error_signal.emit(
+                        "No resolutions available for this video."
+                        )
         except Exception as e:
-            error_message = f"Failed to fetch resolutions: {str(e)}"
-            print(f"Error: {error_message}")  # Log error
+            error_message = f"Failed to fetch resolutions: {type(e).__name__}"
+            self.logger.error(f"Error in ResolutionFetcherThread: {error_message}", exc_info=True)
             self.error_signal.emit(error_message)
 
 
@@ -114,7 +138,12 @@ class YouTubeDownloader(QMainWindow):
 
         self.type_label = QLabel("Select download type:")
         self.type_combo = QComboBox()
+        # Adding a placeholder item at index 0
+        self.type_combo.addItem("Select Type", None)  # This item has no real value
         self.type_combo.addItems(["Video", "Audio"])
+        # Set the default to the placeholder
+        self.type_combo.setCurrentIndex(0)
+        self.type_combo.setEnabled(True)
         self.type_combo.currentIndexChanged.connect(self.update_ui)
         self.type_layout.addWidget(self.type_label)
         self.type_layout.addWidget(self.type_combo)
@@ -218,17 +247,34 @@ class YouTubeDownloader(QMainWindow):
             }
         """)
 
+    def check_url_input(self):
+        url = self.url_input.text().strip()
+        if url:
+            self.type_combo.setEnabled(True)
+        else:
+            self.type_combo.setEnabled(False)
+            self.type_combo.setCurrentIndex(0)  # Reset to placeholder
+            # Clear previous selections
+            self.resolution_combo.clear()
+            self.resolution_combo.setEnabled(False)
+
     def update_ui(self):
         """
         Adjusts UI elements based on the selected download type.
         """
-        if self.type_combo.currentText() == "Audio":
+        selected_type = self.type_combo.currentText()
+        if not self.url_input.text().strip():
+            QMessageBox.warning(self, "URL Required", "Please provide a YouTube URL before selecting download type.")
+            self.type_combo.setCurrentIndex(0)
+            return
+
+        if selected_type == "Audio":
             self.progress_bar.setFormat("Ready to download audio.")
             self.resolution_combo.setEnabled(False)
             self.resolution_combo.clear()
             self.loading_label.setVisible(False)
             self.loading_text.setVisible(False)
-        else:
+        elif selected_type == "Video":
             self.progress_bar.setFormat("Ready to download video.")
             self.resolution_combo.setEnabled(False)  # Disable while fetching
             self.resolution_combo.clear()
@@ -236,6 +282,12 @@ class YouTubeDownloader(QMainWindow):
             self.loading_text.setVisible(True)
             self.loading_movie.start()
             self.fetch_resolutions_in_background()
+        else:  # Placeholder 'Select Type' is selected
+            self.progress_bar.setFormat("Please select download type.")
+            self.resolution_combo.setEnabled(False)
+            self.resolution_combo.clear()
+            self.loading_label.setVisible(False)
+            self.loading_text.setVisible(False)
 
     def fetch_resolutions_in_background(self):
         url = self.url_input.text().strip()

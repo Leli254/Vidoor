@@ -9,6 +9,11 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QMovie
 import yt_dlp
+from urllib.parse import urlparse
+
+
+# Determine the directory of the script
+script_dir = os.path.dirname(__file__)
 
 
 class MyLogger:
@@ -63,7 +68,9 @@ class ResolutionFetcherThread(QThread):
                 if resolutions:
                     self.resolution_fetched.emit(resolutions)
                 else:
-                    self.error_signal.emit("No resolutions available for this video.")
+                    self.error_signal.emit(
+                        "No resolutions available for this video."
+                        )
         except Exception as e:
             error_message = f"Failed to fetch resolutions: {str(e)}"
             print(f"Error: {error_message}")  # Log error
@@ -101,21 +108,25 @@ class YouTubeDownloader(QMainWindow):
         self.url_group.setLayout(self.url_layout)
         self.url_label = QLabel("YouTube URL:")
         self.url_input = QLineEdit()
-        self.url_input.setPlaceholderText("Enter the YouTube video or playlist URL here...")
+        self.url_input.setPlaceholderText(
+            "Enter the YouTube video or playlist URL here..."
+            )
         self.url_layout.addWidget(self.url_label)
         self.url_layout.addWidget(self.url_input)
 
         self.layout.addWidget(self.url_group)
 
         # Step 2: Select Type and Resolution
-        self.type_group = QGroupBox("Step 2: Select Download Type and Resolution")
+        self.type_group = QGroupBox(
+            "Step 2: Select Download Type and Resolution"
+            )
         self.type_layout = QVBoxLayout()
         self.type_group.setLayout(self.type_layout)
 
         self.type_label = QLabel("Select download type:")
         self.type_combo = QComboBox()
-        # Adding a placeholder item at index 0
-        self.type_combo.addItem("Select Type", None)  # This item has no real value
+        # Adding a placeholder item at index 0  
+        self.type_combo.addItem("Select Type", None)
         self.type_combo.addItems(["Video", "Audio"])
         # Set the default to the placeholder
         self.type_combo.setCurrentIndex(0)
@@ -125,10 +136,10 @@ class YouTubeDownloader(QMainWindow):
         self.type_layout.addWidget(self.type_combo)
 
         # Loading animation setup
+        gif_path = os.path.join(script_dir, 'Assets', 'loading.gif')
         self.loading_container = QHBoxLayout()
-
         self.loading_label = QLabel()
-        self.loading_movie = QMovie("/home/leli/Projects/Youtube-Downloader/Sonic/Assets/loading.gif")
+        self.loading_movie = QMovie(gif_path)
         self.loading_label.setMovie(self.loading_movie)
         self.loading_label.setFixedSize(50, 50)
         self.loading_label.setScaledContents(True)
@@ -240,7 +251,11 @@ class YouTubeDownloader(QMainWindow):
         """
         selected_type = self.type_combo.currentText()
         if not self.url_input.text().strip():
-            QMessageBox.warning(self, "URL Required", "Please provide a YouTube URL before selecting download type.")
+            QMessageBox.warning(
+                self,
+                "URL Required",
+                "Please provide a YouTube URL before selecting download type."
+                )
             self.type_combo.setCurrentIndex(0)
             return
 
@@ -268,7 +283,9 @@ class YouTubeDownloader(QMainWindow):
     def fetch_resolutions_in_background(self):
         url = self.url_input.text().strip()
         self.fetcher_thread = ResolutionFetcherThread(url)
-        self.fetcher_thread.resolution_fetched.connect(self.on_resolutions_fetched)
+        self.fetcher_thread.resolution_fetched.connect(
+            self.on_resolutions_fetched
+            )
         self.fetcher_thread.error_signal.connect(self.on_fetch_error)
         self.fetcher_thread.start()
 
@@ -280,10 +297,16 @@ class YouTubeDownloader(QMainWindow):
             self.resolution_combo.clear()
             for res in resolutions:
                 resolution_str, format_id = res
-                self.resolution_combo.addItem(f"{resolution_str} - {format_id}", format_id)
+                self.resolution_combo.addItem(
+                    f"{resolution_str} - {format_id}", format_id
+                    )
             self.resolution_combo.setEnabled(True)
         else:
-            QMessageBox.information(self, "Info", "No resolutions available for this video.")
+            QMessageBox.information(
+                self,
+                "Info",
+                "No resolutions available for this video."
+                )
             self.resolution_combo.setEnabled(False)
 
     def on_fetch_error(self, error_message):
@@ -294,7 +317,8 @@ class YouTubeDownloader(QMainWindow):
 
     def confirm_cancel(self):
         if QMessageBox.question(
-                self, "Confirm Cancel", "Are you sure you want to cancel the download?",
+                self, "Confirm Cancel",
+                "Are you sure you want to cancel the download?",
                 QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             self.cancel_download()
 
@@ -311,7 +335,10 @@ class YouTubeDownloader(QMainWindow):
     def download_video(self):
         url = self.url_input.text().strip()
         if not url:
-            QMessageBox.warning(self, "Error", "Please enter a valid YouTube URL.")
+            QMessageBox.warning(
+                self, "Error",
+                "Please enter a valid YouTube URL."
+                )
             return
 
         download_type = self.type_combo.currentText()
@@ -334,15 +361,35 @@ class YouTubeDownloader(QMainWindow):
                     downloaded_bytes = d.get('downloaded_bytes', 0)
                     total_bytes = d.get('total_bytes', 1)
                     percent = downloaded_bytes / total_bytes * 100
-                    self.progress_bar.setFormat(f"Downloading - {int(percent)}%")
+                    if d['info_dict'].get('is_audio'):
+                        self.progress_bar.setFormat(
+                            f"Downloading Audio - {int(percent)}%"
+                            )
+                    else:
+                        self.progress_bar.setFormat(
+                            f"Downloading Video - {int(percent)}%"
+                            )
                     self.progress_bar.setValue(int(percent))
                 elif d['status'] == 'finished':
+                    if d['info_dict'].get('is_audio'):
+                        self.progress_bar.setFormat(
+                            "Audio Download Completed - 100%"
+                            )
+                    else:
+                        self.progress_bar.setFormat(
+                            "Video Download Completed - 100%"
+                            )
                     self.progress_bar.setValue(100)
-                    self.progress_bar.setFormat("Completed - 100%")
+                elif d['status'] == 'post_processing':
+                    self.progress_bar.setFormat("Merging Audio and Video...")
 
             ydl_opts = {
                 'format': f"{resolution}+bestaudio/best",
-                'outtmpl': os.path.join(YouTubeDownloader.DOWNLOADS_FOLDER, '%(title)s.%(ext)s'),
+                'outtmpl': (
+                    os.path.join(
+                        YouTubeDownloader.DOWNLOADS_FOLDER,
+                        '%(title)s.%(ext)s')
+                    ),
                 'progress_hooks': [progress_hook],
                 'concurrent_fragments': 4,
                 'fragment_retries': 10,
@@ -377,7 +424,10 @@ class YouTubeDownloader(QMainWindow):
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
-            QMessageBox.information(self, "Success", "Download completed successfully.")
+            QMessageBox.information(
+                self,
+                "Success", "Download completed successfully."
+                )
         except KeyboardInterrupt:
             self.cancel_download()
         except Exception as e:
@@ -385,6 +435,7 @@ class YouTubeDownloader(QMainWindow):
         finally:
             self.cancel_button.setEnabled(False)
             self.download_button.setEnabled(True)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

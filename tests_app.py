@@ -1,11 +1,11 @@
 import unittest
-import app
+import main
 from unittest.mock import Mock, patch
 from PyQt5.QtWidgets import (
     QApplication, QVBoxLayout,
     QLineEdit, QComboBox,
 )
-from app import MyLogger, ResolutionFetcherThread, YouTubeDownloader
+from main import MyLogger, ResolutionFetcherThread, YouTubeDownloader
 
 
 class TestMyLogger(unittest.TestCase):

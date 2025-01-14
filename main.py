@@ -191,9 +191,9 @@ class YouTubeDownloader(QMainWindow):
         self.setWindowTitle("Sonic Video Downloader")
         self.setGeometry(200, 200, 600, 600)
         # Set the window icon
-        icon_path = os.path.join(script_dir, 'Assets', 'app.jpg')
+        icon_path = os.path.join(script_dir, 'Assets', 'app.ico')
         pixmap = QPixmap(icon_path).scaled(
-            50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            70, 70, Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
         self.setWindowIcon(QIcon(pixmap))
 
@@ -291,7 +291,7 @@ class YouTubeDownloader(QMainWindow):
         self.download_button.setStyleSheet("""
             QPushButton {
                 text-align: left;
-                padding-left: 5px;  # Adjust padding as needed
+                padding-left: 5px; /* Adjust padding as needed */
             }
         """)
         self.download_button.clicked.connect(self.download_video)

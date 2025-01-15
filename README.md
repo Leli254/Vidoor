@@ -27,11 +27,15 @@ Vidoor Video Downloader is designed to provide an easy-to-use interface for down
 
 Download the .deb file from the releases page and install it using the following command:
 
-`sudo dpkg -i vidoor-video-downloader.deb`
+```sh
+sudo dpkg -i vidoor-video-downloader.deb
+```
 
 Resolve any missing dependencies by running:
 
-`sudo apt-get install -f`
+```
+sudo apt-get install -f
+```
 
 ### Windows (Executable)
 

@@ -1,6 +1,6 @@
-import sys
-import os
 import re
+import os
+import sys
 import logging
 from typing import Optional, Dict, Any, List, Tuple
 from PyQt5.QtWidgets import (
@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QLineEdit, QPushButton, QComboBox, QWidget,
     QMessageBox, QProgressBar, QGroupBox, QHBoxLayout
 )
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QMovie, QPixmap, QIcon
 import yt_dlp
 
@@ -191,7 +191,7 @@ class YouTubeDownloader(QMainWindow):
         self.setWindowTitle("Sonic Video Downloader")
         self.setGeometry(200, 200, 600, 600)
         # Set the window icon
-        icon_path = os.path.join(script_dir, 'Assets', 'app.ico')
+        icon_path = os.path.join(script_dir, 'Assets', 'app_icon.ico')
         pixmap = QPixmap(icon_path).scaled(
             70, 70, Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
@@ -493,11 +493,30 @@ class YouTubeDownloader(QMainWindow):
             else None
         )
         self.download_button.setEnabled(False)
+
+        # Set initial message on the progress bar
+        self.progress_bar.setFormat("Download initiated, please wait...")
+        self.progress_bar.setValue(0)
+        QApplication.processEvents()  # Ensure immediate UI update
+
+        # Use QTimer for non-blocking delay
+        # Use QTimer for non-blocking delay
+        QTimer.singleShot(
+            500,
+            lambda: self._perform_download(
+                url, ydl_opts
+            )
+        )
+        QApplication.processEvents()  # Process UI events to update the display
+
         try:
-            ydl_opts: Dict[str, Any] = (
-                self._setup_download_options(download_type, resolution)
+            ydl_opts: Dict[str, Any] = self._setup_download_options(
+                download_type, resolution
                 )
-            self._perform_download(url, ydl_opts)
+            # Correct to:
+            QTimer.singleShot(
+                500, lambda: self._perform_download(url, ydl_opts)
+                )
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to download: {e}")
         finally:

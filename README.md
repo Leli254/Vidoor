@@ -98,4 +98,4 @@ Contributions are welcome! Here's how you can contribute:
 Please ensure your code follows the project's coding standards and includes appropriate tests.
 
 ## License
-This project is licensed under the MIT License (LICENSE). 
+This project is licensed under the [MIT License](./LICENSE). 

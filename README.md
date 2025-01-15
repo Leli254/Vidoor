@@ -74,7 +74,7 @@ yt-dlp: A youtube-dl fork with additional features and bug fixes.
 
 Install dependencies using:
 
-pip install -r requirements.txt
+`pip install -r requirements.txt`
 
 ## Contributing
 Contributions are welcome! Here's how you can contribute:

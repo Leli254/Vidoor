@@ -27,11 +27,11 @@ Vidoor Video Downloader is designed to provide an easy-to-use interface for down
 
 Download the .deb file from the releases page and install it using the following command:
 
-sudo dpkg -i vidoor-video-downloader.deb
+`sudo dpkg -i vidoor-video-downloader.deb`
 
 Resolve any missing dependencies by running:
 
-sudo apt-get install -f
+`sudo apt-get install -f`
 
 ### Windows (Executable)
 
@@ -46,12 +46,13 @@ Download the .exe installer from the releases page and follow the installation p
 #### Steps to Install
 1. **Clone the repository:**
    ```sh
-   git clone git@github.com:yourusername/SonicVideoDownloader.git
-   cd SonicVideoDownloader
+   git clone https://github.com/Leli254/Vidoor.git
+   cd Vidoor
 
 2.**Install required packages:**
-sh
+```sh
 pip install -r requirements.txt
+```
 
 Note: requirements.txt should contain:
 PyQt5

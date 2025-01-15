@@ -1,4 +1,4 @@
-![Vidoor logo](https://github.com/Leli254/Vidoor/blob/main/images/app_icon.jng?raw=true)
+![Vidoor logo](https://github.com/Leli254/Vidoor/blob/main/images/app%20_icon.jpg)
 
 # Vidoor Video Downloader
 

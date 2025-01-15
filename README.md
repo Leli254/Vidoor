@@ -1,3 +1,5 @@
+![Vidoor Logo](./images/app_icon.svg "Vidoor Logo")
+
 # Vidoor Video Downloader
 
 A simple, GUI-based YouTube video and audio downloader built with PyQt5 and yt-dlp.
@@ -60,7 +62,7 @@ pip install -r requirements.txt
 ```
 
 
-Note: requirements.txt should contain:
+**Note:** requirements.txt should contain:
 PyQt5
 yt-dlp
 

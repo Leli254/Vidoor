@@ -1,4 +1,4 @@
-![Vidoor logo](https://github.com/Leli254/Vidoor/blob/main/images/app%20_icon.jpg?raw=true "Vidoor Logo"){ width=200 }
+<img src="https://github.com/Leli254/Vidoor/blob/main/images/app%20_icon.jpg" alt="Vidoor logo" width="200" />
 
 
 # Vidoor Video Downloader

@@ -86,5 +86,5 @@ Open a pull request
 
 Please ensure your code follows the project's coding standards and includes appropriate tests.
 
-License
+#license
 This project is licensed under the MIT License (LICENSE). 

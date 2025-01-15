@@ -33,7 +33,7 @@ sudo dpkg -i vidoor-video-downloader.deb
 
 Resolve any missing dependencies by running:
 
-```
+```sh
 sudo apt-get install -f
 ```
 
@@ -65,7 +65,9 @@ yt-dlp
 
 **3.Run the application:**
 
-`python main.py`
+```sh
+python main.py
+```
 
 
 ## Usage
@@ -80,7 +82,9 @@ yt-dlp: A youtube-dl fork with additional features and bug fixes.
 
 Install dependencies using:
 
-`pip install -r requirements.txt`
+```sh
+pip install -r requirements.txt
+```
 
 ## Contributing
 Contributions are welcome! Here's how you can contribute:

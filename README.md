@@ -71,10 +71,10 @@ python main.py
 
 
 ## Usage
-Enter URL: Paste the YouTube video or playlist URL into the provided text field.
-Select Type: Choose whether to download as video or audio.
+1.Enter URL: Paste the YouTube video or playlist URL into the provided text field.
+2.Select Type: Choose whether to download as video or audio.
 For video, choose the desired resolution from the dropdown (once fetched).
-Download: Click the "Download" button to start the process. 
+3.Download: Click the "Download" button to start the process. 
 
 ## Dependencies
 PyQt5: For creating the GUI.
@@ -88,11 +88,11 @@ pip install -r requirements.txt
 
 ## Contributing
 Contributions are welcome! Here's how you can contribute:
-Fork the repository
-Create your feature branch (git checkout -b feature/YourFeature)
-Commit your changes (git commit -m 'Add some feature')
-Push to the branch (git push origin feature/YourFeature)
-Open a pull request
+-Fork the repository
+-Create your feature branch (git checkout -b feature/YourFeature)
+-Commit your changes (git commit -m 'Add some feature')
+-Push to the branch (git push origin feature/YourFeature)
+-Open a pull request
 
 Please ensure your code follows the project's coding standards and includes appropriate tests.
 

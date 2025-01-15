@@ -52,7 +52,7 @@ Download the .exe installer from the releases page and follow the installation p
 2.**Install required packages:**
 ```sh
 pip install -r requirements.txt
-```
+
 
 Note: requirements.txt should contain:
 PyQt5

@@ -3,102 +3,227 @@
 
 # Vidoor Video Downloader
 
-A simple, GUI-based YouTube video and audio downloader built with PyQt5 and yt-dlp.
+Vidoor Video Downloader is a professional-grade desktop application for downloading and converting YouTube video and audio content with speed, reliability, and precision.
 
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Dependencies](#dependencies)
-- [Contributing](#contributing)
-- [License](#license)
+Built with **PyQt5** and powered by the industry-standard **yt-dlp** engine, Vidoor delivers a streamlined workflow for users who need efficient media extraction with a polished desktop experience.
 
-## Overview
+The application combines:
+- A responsive native desktop interface
+- Real-time progress monitoring
+- High-quality audio conversion
+- Dynamic resolution discovery
+- Modern JavaScript runtime handling for platform compatibility
 
-Vidoor Video Downloader is designed to provide an easy-to-use interface for downloading videos or extracting audio from YouTube URLs. Leveraging yt-dlp for downloads and PyQt5 for the GUI, it ensures performance, versatility, and user-friendliness.
+---
 
-## Features
-- **Download Videos/Audio**: Choose between video or audio-only downloads.
-- **Resolution Selection**: Select video resolution from available options fetched dynamically from YouTube.
-- **Progress Indication**: Visual progress bar to monitor download status.
-- **Customizable Output**: Downloads are saved to the user's Downloads folder with a filename based on the video title.
+## ⚖️ Legal Disclaimer
 
-## Installation
+Vidoor is provided as a technical utility for personal content management and lawful media access.
+
+Use of third-party platforms such as YouTube is governed by their respective Terms of Service. By using this software, you acknowledge that you are solely responsible for complying with:
+- Applicable copyright laws
+- Platform usage policies
+- Local regulations regarding media downloading and distribution
+
+The developers of Vidoor do not endorse:
+- Unauthorized redistribution of copyrighted material
+- Commercial misuse of downloaded content
+- Circumvention of platform restrictions in violation of service agreements
+
+---
+
+## ✨ Key Features
+
+### Dynamic Metadata Extraction
+Automatically retrieves available video formats and resolutions directly from the source, including:
+- 144p
+- 360p
+- 720p
+- 1080p
+- 4K (when available)
+
+### High-Quality Audio Conversion
+Extract audio streams into high-fidelity MP3 files with:
+- Embedded thumbnails
+- Metadata preservation
+- FFmpeg-powered transcoding
+
+### Real-Time Download Monitoring
+Integrated progress tracking provides:
+- Download percentage
+- Transfer speed
+- Estimated time remaining (ETA)
+- Live processing status
+
+### Modern JavaScript Runtime Support
+Integrated with `yt-dlp-ejs` and Node.js to maintain compatibility with modern signature-based platform protections and dynamic JavaScript extraction logic.
+
+### Flexible File Management
+Users can:
+- Select custom output directories
+- Organize downloads efficiently
+- Automatically clean temporary fragments after processing
+
+### Professional Desktop Experience
+Built with PyQt5 to provide:
+- Native desktop responsiveness
+- Clean step-based workflow
+- Stable cross-platform operation
+
+---
+
+## 🚀 Installation
+
+## Prerequisites
+
+Before installing Vidoor, ensure the following dependencies are available on your system:
+
+### Required Software
+
+- Python 3.7+
+- Node.js
+- FFmpeg
+
+### Why These Dependencies Matter
+
+| Dependency | Purpose |
+|---|---|
+| Python | Core application runtime |
+| Node.js | JavaScript signature/runtime support |
+| FFmpeg | Audio extraction and media transcoding |
+
+---
+
+## 📥 Source Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Leli254/Vidoor.git
+cd Vidoor
+```
+
+### 2. Create a Virtual Environment (Recommended)
+
+#### Linux / macOS
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+#### Windows
+
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Install Python Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 📦 Binary Installation
 
 ### Linux (.deb)
 
-Download the .deb file from the releases page and install it using the following command:
-
-```sh
+```bash
 sudo dpkg -i vidoor-video-downloader.deb
 ```
 
-Resolve any missing dependencies by running:
+### Windows (.exe)
 
-```sh
-sudo apt-get install -f
+Download the latest installer from the Releases page.
+
+---
+
+## 🛠 Usage Guide
+
+### Step 1 — Paste URL
+Copy and paste the YouTube video URL into the application input field.
+
+### Step 2 — Select Media Type
+Choose:
+- Video Download
+- Audio Extraction
+
+### Step 3 — Choose Resolution
+If downloading video, Vidoor automatically fetches available resolutions for selection.
+
+### Step 4 — Select Output Directory
+Choose where the downloaded media should be saved.
+
+### Step 5 — Start Download
+Click **Start Download** to begin processing.
+
+The application will display:
+- Live progress
+- Download speed
+- ETA
+- Conversion status
+
+---
+
+## 📦 Technical Stack
+
+| Category | Technology |
+|---|---|
+| GUI Framework | PyQt5 |
+| Media Engine | yt-dlp |
+| JavaScript Runtime Support | yt-dlp-ejs |
+| Media Processing | FFmpeg |
+| Language | Python |
+| Testing | pytest, pytest-qt |
+
+---
+
+## 🧪 Testing
+
+The project includes automated tests for validating:
+- Download workflow behavior
+- GUI interaction logic
+- Media processing functionality
+- Runtime stability
+
+### Run All Tests
+
+```bash
+pytest -v
 ```
 
-### Windows (Executable)
+### Run GUI-Specific Tests
 
-Download the .exe installer from the releases page and follow the installation prompts.
-
-### Source Installation (Installing from Source Code)
-#### Prerequisites
-- Python 3.7+
-- PyQt5
-- yt-dlp
-
-#### Steps to Install
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/Leli254/Vidoor.git
-   cd Vidoor
-   ```
-
-2.**Install required packages:**
-```sh
-pip install -r requirements.txt
+```bash
+pytest tests/gui -v
 ```
 
+---
 
-**Note:** requirements.txt should contain:
-PyQt5
-yt-dlp
+## 🤝 Contributing
 
-**3.Run the application:**
+Professional contributions are welcome.
 
-```sh
-python main.py
+### Standard Contribution Workflow
+
+1. Fork the repository
+2. Create a feature branch
+
+```bash
+git checkout -b feature/optimization
 ```
 
+3. Commit changes using conventional commit standards
+4. Push your branch
+5. Open a Pull Request
 
-## Usage
-1. Enter URL: Paste the YouTube video or playlist URL into the provided text field.
-2. Select Type: Choose whether to download as video or audio.
-For video, choose the desired resolution from the dropdown (once fetched).
-3. Download: Click the "Download" button to start the process. 
+---
 
-## Dependencies
-PyQt5: For creating the GUI.
-yt-dlp: A youtube-dl fork with additional features and bug fixes.
+## 📜 License
 
-Install dependencies using:
+This project is licensed under the MIT License.
 
-```sh
-pip install -r requirements.txt
-```
-
-## Contributing
-Contributions are welcome! Here's how you can contribute:
-- Fork the repository
-- Create your feature branch (git checkout -b feature/YourFeature)
-- Commit your changes (git commit -m 'Add some feature')
-- Push to the branch (git push origin feature/YourFeature)
-- Open a pull request
-
-Please ensure your code follows the project's coding standards and includes appropriate tests.
-
-## License
-This project is licensed under the [MIT License](./LICENSE). 
+See the `LICENSE` file for full details.

@@ -1,3 +1,4 @@
+# Ignore video files and test script
 *.mp4
 *.avi
 *.mkv
@@ -9,3 +10,36 @@
 test_app.py
 
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv/
+.env/
+
+# Build Artifacts
+build/
+dist/
+*.spec
+
+# PyInstaller
+*.manifest
+
+# IDE
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log

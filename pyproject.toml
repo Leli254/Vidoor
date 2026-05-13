@@ -1,3 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vidoor"
+version = "1.0.0"
+description = "Professional desktop YouTube downloader built with PyQt5 and yt-dlp"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
